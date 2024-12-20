@@ -9,6 +9,8 @@ library(hunspell)
 
 # 1. Load Dataset: we primarily work from google suite ----
 df <- read_sheet("any_google_sheet_with_a_response_column")
+# the names dictionary is a vector of names from our customer database ----
+names <- read_rds("~/Documents/text_mining/Source/data/namesDict.rds") 
 
 # 2. Define NA Patterns ----
 na_patterns <- c(
@@ -111,7 +113,6 @@ number_patterns <- generate_number_patterns()
 df_masked <- mask_experience_years(df_preprocessed, number_patterns = number_patterns)
 
 # Process Names
-names <- read_rds("~/Documents/text_mining/Source/data/namesDict.rds")
 df_names_processed <- process_names_in_text(df_masked, names, words, safe_list)
 
 # Flag Non-English Words
