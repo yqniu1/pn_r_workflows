@@ -12,7 +12,7 @@ df <- read_sheet("any_google_sheet_with_a_response_column")
 # the names dictionary is a vector of names from our customer database ----
 names <- read_rds("~/Documents/text_mining/Source/data/namesDict.rds") 
 
-# 2. Define NA Patterns ----
+# 2. Define NA Patterns: this detects most ways a user enters an invalid response ----
 na_patterns <- c(
   "^\\s*(?i)na\\s*$", "^\\s*(?i)n/a\\s*$", "^\\s*(?i)n\\.a\\.\\s*$",
   "^\\s*(?i)not\\s+(applicable|available)\\s*$", "^\\s*(?i)none\\s*\\.*$",
@@ -41,9 +41,15 @@ detect_gibberish <- function(text) {
 preprocess_responses <- function(df, text_column = "response") {
   df %>%
     mutate(
+      # if the response is less than 2 characters, consider it invalid
       is_short_response = str_length(str_trim(!!sym(text_column))) <= 2,
+      
+      # call the helper function
       is_gibberish = map_lgl(!!sym(text_column), detect_gibberish),
-      is_NA = str_detect(str_trim(!!sym(text_column)), na_pattern_combined) | is.na(!!sym(text_column)),
+      
+      # string detect with regex 
+      is_NA = str_detect(str_trim(!!sym(text_column)), 
+                         na_pattern_combined) | is.na(!!sym(text_column)),
       res_processed = if_else(
         is_short_response | is_gibberish | is_NA,
         NA_character_,
